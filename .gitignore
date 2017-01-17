@@ -242,3 +242,4 @@ ModelManifest.xml
 .fake/
 
 /src/EuProcurement.CsvThinner/data
+project.fragment.lock.json
