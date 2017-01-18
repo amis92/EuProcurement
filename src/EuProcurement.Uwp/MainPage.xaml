@@ -12,9 +12,11 @@
             <TextBlock>Data finished loading.</TextBlock>
             <TextBlock Text="{x:Bind ViewModel.LoadingException.Message, Mode=OneWay}" Visibility="{x:Bind IsNotNullToVisibility(ViewModel.LoadingException), Mode=OneWay}" />
             <ListView>
-                <DataTemplate>
-                    <CheckBox Content="{x:Bind}"></CheckBox>
-                </DataTemplate>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:SelectionItem">
+                        <CheckBox Content="{x:Bind DisplayName, Mode=OneWay}" IsEnabled="{x:Bind IsSelectable, Mode=OneWay}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
             </ListView>
         </StackPanel>
         <ProgressRing x:Name="LoadingProgressRing"
