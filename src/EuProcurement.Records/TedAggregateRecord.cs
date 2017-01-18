@@ -1,4 +1,4 @@
-﻿namespace EuProcurement.Model
+﻿namespace EuProcurement.Records
 {
     public class TedAggregateRecord
     {

@@ -26,5 +26,23 @@ namespace EuProcurement.Uwp
         {
             this.InitializeComponent();
         }
+
+        private MainViewModel ViewModel { get; } = new MainViewModel();
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            if (e.NavigationMode == NavigationMode.New)
+            {
+                await ViewModel.InitializeAsync();
+            }
+        }
+
+        public Visibility InvertVisibility(Visibility original)
+        {
+            return original == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        public Visibility IsNotNullToVisibility(object obj) => obj != null ? Visibility.Visible : Visibility.Collapsed;
     }
 }

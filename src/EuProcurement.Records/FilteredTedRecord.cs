@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace EuProcurement.Model
+namespace EuProcurement.Records
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class FilteredTedRecord

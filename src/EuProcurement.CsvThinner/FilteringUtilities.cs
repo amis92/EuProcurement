@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using CsvHelper;
@@ -19,6 +20,7 @@ namespace EuProcurement.CsvThinner
         private static void FilterColumns(TextWriter output)
         {
             var writer = new CsvWriter(output);
+            writer.Configuration.CultureInfo = CultureInfo.InvariantCulture;
             var ignoredRowsAnalyzer = new IgnoredRowsAnalyzer();
             using (var reader = new StreamReader(File.OpenRead(TedFullCsvFilename)))
             {

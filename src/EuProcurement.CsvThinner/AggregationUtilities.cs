@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using CsvHelper;
-using EuProcurement.Model;
+using EuProcurement.Records;
 using static EuProcurement.CsvThinner.FileConstants;
 
 namespace EuProcurement.CsvThinner
@@ -18,6 +18,7 @@ namespace EuProcurement.CsvThinner
             using (var outputStream = new StreamWriter(File.Create(TedAggregatedCsvFilename)))
             {
                 var writer = new CsvWriter(outputStream);
+                writer.Configuration.CultureInfo = CultureInfo.InvariantCulture;
                 writer.WriteRecords(aggregateRecords);
             }
         }

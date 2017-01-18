@@ -90,6 +90,7 @@
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <None Include="project.json" />
+    <Content Include="TedData\cpv_2008.xml" />
     <Content Include="TedData\TED_CAN_2009_2015_aggregated.csv" />
     <Content Include="TedData\TED_CAN_2009_2015_filtered.csv" />
   </ItemGroup>
@@ -97,9 +98,13 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DatafileConstants.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainViewModel.cs" />
+    <Compile Include="SelectionItem.cs" />
+    <Compile Include="ViewModelBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

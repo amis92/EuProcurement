@@ -8,6 +8,19 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+        <StackPanel Visibility="{x:Bind InvertVisibility(LoadingProgressRing.Visibility), Mode=OneWay}">
+            <TextBlock>Data finished loading.</TextBlock>
+            <TextBlock Text="{x:Bind ViewModel.LoadingException.Message, Mode=OneWay}" Visibility="{x:Bind IsNotNullToVisibility(ViewModel.LoadingException), Mode=OneWay}" />
+            <ListView>
+                <DataTemplate>
+                    <CheckBox Content="{x:Bind}"></CheckBox>
+                </DataTemplate>
+            </ListView>
+        </StackPanel>
+        <ProgressRing x:Name="LoadingProgressRing"
+                      IsActive="{x:Bind ViewModel.IsLoadingData, Mode=OneWay}"
+                      Visibility="{x:Bind ViewModel.IsLoadingData, Mode=OneWay}"
+                      Width="100"
+                      Height="100"/>
     </Grid>
 </Page>
