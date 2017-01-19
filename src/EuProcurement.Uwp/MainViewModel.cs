@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Windows.ApplicationModel;
 using Windows.Storage;
 using EuProcurement.Records;
@@ -16,9 +17,10 @@ namespace EuProcurement.Uwp
         private bool _isLoadingData = true;
         private ImmutableArray<TedAggregateRecord> _records = ImmutableArray<TedAggregateRecord>.Empty;
         private Exception _loadingException;
-        private ImmutableArray<SelectionItem> _years;
-        private ImmutableArray<SelectionItem> _countriesFrom;
-        private ImmutableArray<SelectionItem> _countriesTo;
+        private ImmutableArray<SelectionItem> _yearFilters = ImmutableArray<SelectionItem>.Empty;
+        private ImmutableArray<SelectionItem> _countryFromFilters = ImmutableArray<SelectionItem>.Empty;
+        private ImmutableArray<SelectionItem> _countryToFilters = ImmutableArray<SelectionItem>.Empty;
+        private CpvCatalogue _cpvCatalogue;
 
         public bool IsLoadingData
         {
@@ -38,22 +40,28 @@ namespace EuProcurement.Uwp
             private set { Set(ref _loadingException, value); }
         }
 
-        public ImmutableArray<SelectionItem> Years
+        public ImmutableArray<SelectionItem> YearFilters
         {
-            get { return _years; }
-            private set { Set(ref _years, value); }
+            get { return _yearFilters; }
+            private set { Set(ref _yearFilters, value); }
         }
 
-        public ImmutableArray<SelectionItem> CountriesFrom
+        public ImmutableArray<SelectionItem> CountryFromFilters
         {
-            get { return _countriesFrom; }
-            private set { Set(ref _countriesFrom, value); }
+            get { return _countryFromFilters; }
+            private set { Set(ref _countryFromFilters, value); }
         }
 
-        public ImmutableArray<SelectionItem> CountriesTo
+        public ImmutableArray<SelectionItem> CountryToFilters
         {
-            get { return _countriesTo; }
-            set { Set(ref _countriesTo, value); }
+            get { return _countryToFilters; }
+            set { Set(ref _countryToFilters, value); }
+        }
+
+        public CpvCatalogue CpvCatalogue
+        {
+            get { return _cpvCatalogue; }
+            set { Set(ref _cpvCatalogue, value); }
         }
 
         private bool Initialized { get; set; }
@@ -67,7 +75,6 @@ namespace EuProcurement.Uwp
             Initialized = true;
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(1));
                 await LoadDataAsync();
             }
             catch (Exception e)
@@ -87,24 +94,31 @@ namespace EuProcurement.Uwp
                 var csvReader = new CsvHelper.CsvReader(new StreamReader(fileStream));
                 Records = csvReader.GetRecords<TedAggregateRecord>().ToImmutableArray();
             }
-            AnalyzeData();
+            var cpvXmlFile = await tedDataFolder.GetFileAsync(DatafileConstants.CpvCatalogueFilename);
+            using (var fileStream = await cpvXmlFile.OpenStreamForReadAsync())
+            {
+                var xmlSerializer = new XmlSerializer(typeof(CpvCatalogueXml));
+                var cpvCatalogueXml = (CpvCatalogueXml)xmlSerializer.Deserialize(fileStream);
+                CpvCatalogue = CpvCatalogueFactory.CreateCatalogueFromXml(cpvCatalogueXml);
+            }
+            CreateFilters();
         }
 
-        private void AnalyzeData()
+        private void CreateFilters()
         {
-            Years = Records.Select(x => x.Year).Distinct().Select(x => new SelectionItem(x, x)).ToImmutableArray();
-            foreach (var item in Years)
+            YearFilters = Records.Select(x => x.Year).Distinct().OrderBy(x => x).Select(x => new SelectionItem(x, x)).ToImmutableArray();
+            foreach (var item in YearFilters)
             {
                 item.IsSelectedChanged += OnYearIsSelectedChanged;
             }
-            var countries = Records.SelectMany(RecordCountries).Distinct().ToImmutableArray();
-            CountriesFrom = countries.Select(x => new SelectionItem(x, x)).ToImmutableArray();
-            foreach (var item in CountriesFrom)
+            var countries = Records.SelectMany(RecordCountries).Distinct().OrderBy(x => x).ToImmutableArray();
+            CountryFromFilters = countries.Select(x => new SelectionItem(x, x)).ToImmutableArray();
+            foreach (var item in CountryFromFilters)
             {
                 item.IsSelectedChanged += OnCountryIsSelectedChanged;
             }
-            CountriesTo = countries.Select(x => new SelectionItem(x, x)).ToImmutableArray();
-            foreach (var item in CountriesTo)
+            CountryToFilters = countries.Select(x => new SelectionItem(x, x)).ToImmutableArray();
+            foreach (var item in CountryToFilters)
             {
                 item.IsSelectedChanged += OnCountryIsSelectedChanged;
             }

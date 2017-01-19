@@ -98,6 +98,10 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CpvCatalogue.cs" />
+    <Compile Include="CpvCatalogueXml.cs" />
+    <Compile Include="CpvCode.cs" />
+    <Compile Include="CpvCodeExtensions.cs" />
     <Compile Include="DatafileConstants.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
