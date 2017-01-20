@@ -98,16 +98,21 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CountrySelection.cs" />
+    <Compile Include="CountrySelectorViewModel.cs" />
     <Compile Include="CpvCatalogue.cs" />
     <Compile Include="CpvCatalogueXml.cs" />
     <Compile Include="CpvCode.cs" />
     <Compile Include="CpvCodeExtensions.cs" />
     <Compile Include="DatafileConstants.cs" />
+    <Compile Include="DelegateCommand.cs" />
+    <Compile Include="DelegateCommand{T}.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainViewModel.cs" />
     <Compile Include="SelectionItem.cs" />
+    <Compile Include="SelectionTreeItem.cs" />
     <Compile Include="ViewModelBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

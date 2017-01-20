@@ -5,22 +5,227 @@
     xmlns:local="using:EuProcurement.Uwp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    mc:Ignorable="d"
+    x:Name="Page">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="12,6">
-        <StackPanel Visibility="{x:Bind InvertVisibility(LoadingProgressRing.Visibility), Mode=OneWay}">
-            <!--<TextBlock>Data finished loading.</TextBlock>-->
-            
-            <TextBlock Text="{x:Bind ViewModel.LoadingException.Message, Mode=OneWay}" Visibility="{x:Bind IsNotNullToVisibility(ViewModel.LoadingException), Mode=OneWay}" />
-            
-            <ListView x:Name="YearFilterListView" Header="Year filter" ItemsSource="{x:Bind ViewModel.YearFilters, Mode=OneWay}" SelectionMode="None" MaxWidth="200">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="local:SelectionItem">
-                        <CheckBox Content="{x:Bind DisplayName, Mode=OneWay}" IsEnabled="{x:Bind IsSelectable, Mode=OneWay}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </StackPanel>
+    <Page.Resources>
+        <DataTemplate x:Key="CpvSelectionTreeCheckboxTemplate" x:DataType="local:SelectionTreeItem">
+            <RelativePanel>
+                <CheckBox x:Name="CheckBox"
+                          MinWidth="0"
+                          IsEnabled="{x:Bind IsSelectable, Mode=OneWay}"
+                          IsChecked="{x:Bind IsSelected, Mode=TwoWay}"/>
+                <TextBlock x:Name="ValueTextBlock" Text="{x:Bind Value, Mode=OneWay}"
+                           Visibility="{x:Bind local:MainPage.IsNotNullToVisibility(Value), Mode=OneWay}"
+                           Foreground="Gray"
+                           RelativePanel.RightOf="CheckBox"/>
+                <TextBlock x:Name="DisplayTextBlock"
+                           Text="{x:Bind DisplayName, Mode=OneWay}"
+                           TextWrapping="WrapWholeWords"
+                           RelativePanel.RightOf="CheckBox" 
+                           RelativePanel.Below="ValueTextBlock" />
+            </RelativePanel>
+        </DataTemplate>
+        <DataTemplate x:Key="SelectionCheckboxTemplate" x:DataType="local:SelectionTreeItem">
+            <CheckBox x:Name="CheckBox"
+                      IsEnabled="{x:Bind IsSelectable, Mode=OneWay}"
+                      IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                      Content="{x:Bind DisplayName, Mode=OneWay}"/>
+        </DataTemplate>
+        <DataTemplate x:Key="CountrySelectionTemplate" x:DataType="local:CountrySelection">
+            <controls:SlidableListItem
+                HorizontalAlignment="Stretch"
+                Background="Gray"
+                IsLeftCommandEnabled="False"
+                IsRightCommandEnabled="True"
+                RightIcon="Delete"
+                RightLabel="Delete"
+                RightForeground="White"
+                RightBackground="OrangeRed"
+                RightCommand="{Binding ElementName=Page, Path=ViewModel.CountrySelector.RemovePair, Mode=OneWay}"
+                RightCommandParameter="{x:Bind}"
+                MouseSlidingEnabled="True"
+                IsOffsetLimited="True"
+                IsPointerReleasedOnSwipingHandled="True"
+                ActivationWidth="100">
+                <Grid Height="30">
+                    <TextBlock Text="{x:Bind ToString()}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                </Grid>
+            </controls:SlidableListItem>
+        </DataTemplate>
+        <Style TargetType="controls:BladeItem">
+            <Setter Property="Width" Value="400" />
+            <Setter Property="BorderBrush" Value="DarkGray" />
+            <Setter Property="TitleBarBackground" Value="Gray" />
+            <Setter Property="TitleBarForeground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
+            <Setter Property="CloseButtonBackground" Value="DimGray" />
+            <Setter Property="CloseButtonForeground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
+        </Style>
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="0,1" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid Visibility="{x:Bind InvertVisibility(LoadingProgressRing.Visibility), Mode=OneWay}">
+            <controls:BladeView x:Name="BladeView" Padding="24">
+                <controls:BladeItem x:Name="RootBlade"
+                                    IsOpen="True"
+                                    TitleBarVisibility="Collapsed">
+                    <StackPanel Margin="24">
+                        <TextBlock Text="{x:Bind ViewModel.LoadingException.Message, Mode=OneWay}"
+                                   Visibility="{x:Bind local:MainPage.IsNotNullToVisibility(ViewModel.LoadingException), Mode=OneWay}" />
+                        <TextBlock Style="{ThemeResource TitleTextBlockStyle}" TextWrapping="WrapWholeWords">EU Procurement Net flow analysis</TextBlock>
+                    </StackPanel>
+                </controls:BladeItem>
+                
+                <controls:BladeItem x:Name="FilterBlade"
+                                    IsOpen="True"
+                                    TitleBarVisibility="Collapsed">
+                    <StackPanel Margin="24">
+                        <TextBlock Style="{ThemeResource TitleTextBlockStyle}">Filters</TextBlock>
+                        <ToggleButton x:Name="CpvFilterToggleButton"
+                                      Content="CPV filter"
+                                      Margin="0,12"
+                                      IsChecked="{Binding ElementName=CpvDivisionsBlade, Path=IsOpen, Mode=TwoWay}" />
+                        <ToggleButton x:Name="YearFilterToggleButton"
+                                      Content="Year filter"
+                                      Margin="0,12"
+                                      IsChecked="{Binding ElementName=YearsBlade, Path=IsOpen, Mode=TwoWay}"/>
+                        <ToggleButton x:Name="CountryFilterToggleButton"
+                                      Content="Country filter"
+                                      Margin="0,12"
+                                      IsChecked="{Binding ElementName=CountriesBlade, Path=IsOpen, Mode=TwoWay}"/>
+                    </StackPanel>
+                </controls:BladeItem>
+
+                <controls:BladeItem x:Name="YearsBlade"
+                                    Title="Year filter"
+                                    IsOpen="False"
+                                    VisibilityChanged="YearsBlade_OnVisibilityChanged">
+                    <ListView x:Name="YearFilterListView"
+                              ItemsSource="{x:Bind ViewModel.YearSelectionRoot.Children, Mode=OneWay}"
+                              ItemTemplate="{StaticResource SelectionCheckboxTemplate}"
+                              SelectionMode="None"
+                              Padding="24">
+                        <ListView.Header>
+                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind ViewModel.YearSelectionRoot.IsSelected, Mode=TwoWay}" Margin="0,0,0,6" />
+                        </ListView.Header>
+                    </ListView>
+                </controls:BladeItem>
+
+                <controls:BladeItem x:Name="CountriesBlade"
+                                    Title="Countries filter"
+                                    IsOpen="False"
+                                    VisibilityChanged="CountriesBlade_OnVisibilityChanged">
+                    <ListView x:Name="CountriesListView"
+                              ItemsSource="{x:Bind ViewModel.CountrySelector.SelectedPairs, Mode=OneWay}"
+                              ItemTemplate="{StaticResource CountrySelectionTemplate}"
+                              SelectionMode="None"
+                              Padding="12,24">
+                        <ListView.Header>
+                            <RelativePanel>
+                                <ComboBox x:Name="CountryFromBox" 
+                                          Header="Country from"
+                                          ItemsSource="{x:Bind ViewModel.CountrySelector.Countries, Mode=OneWay}"
+                                          SelectedItem="{x:Bind ViewModel.CountrySelector.NewCountryFrom, Mode=TwoWay}"
+                                          Margin="12,0" />
+                                <ComboBox x:Name="CountryToBox"
+                                          Header="Country to"
+                                          ItemsSource="{x:Bind ViewModel.CountrySelector.Countries, Mode=OneWay}"
+                                          SelectedItem="{x:Bind ViewModel.CountrySelector.NewCountryTo, Mode=TwoWay}"
+                                          Margin="12,0"
+                                          RelativePanel.RightOf="CountryFromBox"/>
+                                <Button x:Name="CountryPairCreateButton"
+                                        Content="Add"
+                                        Command="{x:Bind ViewModel.CountrySelector.CreatePair, Mode=OneWay}"
+                                        Margin="12,0"
+                                        RelativePanel.RightOf="CountryToBox"
+                                        RelativePanel.AlignBottomWith="CountryToBox"/>
+                            </RelativePanel>
+                        </ListView.Header>
+                    </ListView>
+                </controls:BladeItem>
+
+                <controls:BladeItem x:Name="CpvDivisionsBlade"
+                                    Title="CPV Divisions"
+                                    IsOpen="False"
+                                    VisibilityChanged="CpvDivisionsBlade_OnVisibilityChanged">
+                    <ListView x:Name="CpvDivisionsListView"
+                              ItemsSource="{x:Bind ViewModel.CpvSelectableTreeRoot.Children, Mode=OneWay}"
+                              ItemTemplate="{StaticResource CpvSelectionTreeCheckboxTemplate}"
+                              SelectionChanged="CpvDivisionsListView_OnSelectionChanged"
+                              Padding="24">
+                        <ListView.Header>
+                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind ViewModel.CpvSelectableTreeRoot.IsSelected, Mode=TwoWay}" Margin="0,0,0,6" />
+                        </ListView.Header>
+                    </ListView>
+                </controls:BladeItem>
+                
+                <controls:BladeItem x:Name="CpvGroupsBlade"
+                                    Title="{x:Bind CpvDivisionsListView.SelectedItem.(local:SelectionTreeItem.DisplayName), Mode=OneWay}"
+                                    IsOpen="False"
+                                    VisibilityChanged="CpvGroupsBlade_OnVisibilityChanged">
+                    <ListView x:Name="CpvGroupsListView"
+                              ItemsSource="{x:Bind CpvDivisionsListView.SelectedItem.(local:SelectionTreeItem.Children), Mode=OneWay}"
+                              ItemTemplate="{StaticResource CpvSelectionTreeCheckboxTemplate}"
+                              SelectionChanged="CpvGroupsListView_OnSelectionChanged"
+                              Padding="24">
+                        <ListView.Header>
+                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind CpvDivisionsListView.SelectedItem.(local:SelectionTreeItem.IsSelected), Mode=TwoWay}" Margin="0,0,0,6" />
+                        </ListView.Header>
+                    </ListView>
+                </controls:BladeItem>
+                
+                <controls:BladeItem x:Name="CpvClassesBlade"
+                                    Title="{x:Bind CpvGroupsListView.SelectedItem.(local:SelectionTreeItem.DisplayName), Mode=OneWay}"
+                                    IsOpen="False"
+                                    VisibilityChanged="CpvClassesBlade_OnVisibilityChanged">
+                    <ListView x:Name="CpvClassesListView"
+                              ItemsSource="{x:Bind CpvGroupsListView.SelectedItem.(local:SelectionTreeItem.Children), Mode=OneWay}"
+                              ItemTemplate="{StaticResource CpvSelectionTreeCheckboxTemplate}"
+                              SelectionChanged="CpvClassesListView_OnSelectionChanged"
+                              Padding="24">
+                        <ListView.Header>
+                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind CpvGroupsListView.SelectedItem.(local:SelectionTreeItem.IsSelected), Mode=TwoWay}" Margin="0,0,0,6" />
+                        </ListView.Header>
+                    </ListView>
+                </controls:BladeItem>
+                
+                <controls:BladeItem x:Name="CpvCategoriesBlade"
+                                    Title="{x:Bind CpvClassesListView.SelectedItem.(local:SelectionTreeItem.DisplayName), Mode=OneWay}"
+                                    IsOpen="False"
+                                    VisibilityChanged="CpvCategoriesBlade_OnVisibilityChanged">
+                    <ListView x:Name="CpvCategoriesListView"
+                              ItemsSource="{x:Bind CpvClassesListView.SelectedItem.(local:SelectionTreeItem.Children), Mode=OneWay}"
+                              ItemTemplate="{StaticResource CpvSelectionTreeCheckboxTemplate}"
+                              SelectionChanged="CpvCategoriesListView_OnSelectionChanged"
+                              Padding="24">
+                        <ListView.Header>
+                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind CpvClassesListView.SelectedItem.(local:SelectionTreeItem.IsSelected), Mode=TwoWay}" Margin="0,0,0,6" />
+                        </ListView.Header>
+                    </ListView>
+                </controls:BladeItem>
+                
+                <controls:BladeItem x:Name="CpvSubcategoriesBlade"
+                                    Title="{x:Bind CpvCategoriesListView.SelectedItem.(local:SelectionTreeItem.DisplayName), Mode=OneWay}"
+                                    IsOpen="False">
+                    <ListView x:Name="CpvSubcategoriesListView"
+                              ItemsSource="{x:Bind CpvCategoriesListView.SelectedItem.(local:SelectionTreeItem.Children), Mode=OneWay}"
+                              ItemTemplate="{StaticResource CpvSelectionTreeCheckboxTemplate}"
+                              SelectionMode="None"
+                              Padding="24">
+                        <ListView.Header>
+                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind CpvCategoriesListView.SelectedItem.(local:SelectionTreeItem.IsSelected), Mode=TwoWay}" Margin="0,0,0,6" />
+                        </ListView.Header>
+                    </ListView>
+                </controls:BladeItem>
+            </controls:BladeView>
+        </Grid>
         <ProgressRing x:Name="LoadingProgressRing"
                       IsActive="{x:Bind ViewModel.IsLoadingData, Mode=OneWay}"
                       Visibility="{x:Bind ViewModel.IsLoadingData, Mode=OneWay}"

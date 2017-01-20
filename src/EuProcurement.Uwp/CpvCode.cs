@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace EuProcurement.Uwp
 {
-    public struct CpvCode : IEquatable<CpvCode>
+    public struct CpvCode : IEquatable<CpvCode>, IComparable<CpvCode>, IComparable<string>
     {
         public const string EmptyCodeFull = "00000000-0";
         public const string EmptyCode = "00000000";
@@ -84,6 +84,16 @@ namespace EuProcurement.Uwp
         public override string ToString()
         {
             return Code;
+        }
+
+        public int CompareTo(CpvCode other)
+        {
+            return string.CompareOrdinal(Code, other.Code);
+        }
+
+        public int CompareTo(string other)
+        {
+            return string.CompareOrdinal(Code, other);
         }
     }
 }
