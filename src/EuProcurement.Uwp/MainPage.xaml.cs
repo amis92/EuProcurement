@@ -170,6 +170,11 @@ namespace EuProcurement.Uwp
             CloseDivisions();
             YearsBlade.CloseIfNotNull();
         }
+
+        private async void AboutButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            await AboutDialog.ShowAsync();
+        }
     }
 
     public static class BladeExtensions

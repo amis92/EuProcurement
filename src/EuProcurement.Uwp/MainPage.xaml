@@ -123,17 +123,22 @@
                 <controls:BladeItem x:Name="RootBlade"
                                     IsOpen="True"
                                     TitleBarVisibility="Collapsed">
-                    <StackPanel Margin="24">
-                        <TextBlock Text="{x:Bind ViewModel.LoadingException.Message, Mode=OneWay}"
-                                   Visibility="{x:Bind local:MainPage.IsNotNullToVisibility(ViewModel.LoadingException), Mode=OneWay}" />
-                        <TextBlock Style="{ThemeResource TitleTextBlockStyle}"
+                    <ListView ItemsSource="{x:Bind ViewModel.AnalysisResults, Mode=OneWay}"
+                              ItemTemplate="{StaticResource AnalysisResultTemplate}"
+                              SelectionMode="None"
+                              Padding="24">
+                        <ListView.Header>
+                            <TextBlock Style="{ThemeResource TitleTextBlockStyle}"
                                    Text="EU Procurement Net flow analysis"
                                    Margin="0,0,0,12"
                                    TextWrapping="WrapWholeWords" />
-                        <ListView ItemsSource="{x:Bind ViewModel.AnalysisResults, Mode=OneWay}"
-                                  ItemTemplate="{StaticResource AnalysisResultTemplate}"
-                                  SelectionMode="None"/>
-                    </StackPanel>
+                        </ListView.Header>
+                        <ListView.Footer>
+                            <CommandBar IsOpen="True" IsSticky="True">
+                                <AppBarButton x:Name="AboutButton" Icon="Help" Label="About" Click="AboutButton_OnClick" />
+                            </CommandBar>
+                        </ListView.Footer>
+                    </ListView>
                 </controls:BladeItem>
                 
                 <controls:BladeItem x:Name="FilterBlade"
@@ -284,5 +289,25 @@
                       Visibility="{x:Bind ViewModel.IsLoadingData, Mode=OneWay}"
                       Width="100"
                       Height="100"/>
+        <ContentDialog x:Name="AboutDialog"
+                       Title="About"
+                       IsPrimaryButtonEnabled="False"
+                       IsSecondaryButtonEnabled="True"
+                       SecondaryButtonText="Close">
+            <StackPanel Margin="0,12">
+                <controls:HeaderedTextBlock Header="Copyright" Text="Copyright © 2017" Margin="12" />
+                <controls:HeaderedTextBlock Header="Authors" Text="Amadeusz Sadowski &amp; Piotr Olechno" Margin="12" />
+                <controls:HeaderedTextBlock Header="University" Text="Warsaw University of Technology" Margin="12" />
+                <controls:HeaderedTextBlock Header="MIT License" Text="Amadeusz Sadowski &amp; Piotr Olechno" Margin="12" />
+                <StackPanel Margin="12">
+                    <TextBlock Text="GitHub code" />
+                    <HyperlinkButton Content="https://github.com/amis92/EuProcurement" NavigateUri="https://github.com/amis92/EuProcurement"/>
+                </StackPanel>
+                <StackPanel Margin="12">
+                    <TextBlock Text="TED data" />
+                    <HyperlinkButton Content="http://data.europa.eu/euodp/pl/data/dataset/ted-1" NavigateUri="http://data.europa.eu/euodp/pl/data/dataset/ted-1" />
+                </StackPanel>
+            </StackPanel>
+        </ContentDialog>
     </Grid>
 </Page>
