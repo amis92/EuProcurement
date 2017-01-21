@@ -299,25 +299,39 @@
                        IsPrimaryButtonEnabled="False"
                        IsSecondaryButtonEnabled="True"
                        SecondaryButtonText="Close">
-            <StackPanel Margin="0,12">
-                <controls:HeaderedTextBlock Header="Title" Text="EU Procurement Analysis" Margin="12" />
-                <controls:HeaderedTextBlock x:Name="VersionTextBlock" Header="Version" Margin="12" />
-                <controls:HeaderedTextBlock Header="Copyright" Text="Copyright © 2017" Margin="12" />
-                <controls:HeaderedTextBlock Header="Authors" Text="Amadeusz Sadowski &amp; Piotr Olechno" Margin="12" />
-                <controls:HeaderedTextBlock Header="University" Text="Warsaw University of Technology" Margin="12" />
-                <StackPanel Margin="12">
-                    <TextBlock Text="MIT license" />
-                    <HyperlinkButton Content="https://github.com/amis92/EuProcurement/blob/master/LICENSE" NavigateUri="https://github.com/amis92/EuProcurement/blob/master/LICENSE"/>
+            <ScrollViewer>
+                <ScrollViewer.Resources>
+                    <Style TargetType="controls:HeaderedTextBlock">
+                        <Setter Property="Margin" Value="12" />
+                        <Setter Property="TextStyle">
+                            <Setter.Value>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource HeaderedTextBlockTextStyle}">
+                                    <Setter Property="TextWrapping" Value="WrapWholeWords" />
+                                </Style>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ScrollViewer.Resources>
+                <StackPanel Margin="0,12">
+                    <controls:HeaderedTextBlock Header="Title" Text="EU Procurement Analysis" />
+                    <controls:HeaderedTextBlock x:Name="VersionTextBlock" Header="Version" />
+                    <controls:HeaderedTextBlock Header="Copyright" Text="Copyright © 2017" />
+                    <controls:HeaderedTextBlock Header="Authors" Text="Amadeusz Sadowski &amp; Piotr Olechno" />
+                    <controls:HeaderedTextBlock Header="University" Text="Warsaw University of Technology" />
+                    <StackPanel Margin="12">
+                        <TextBlock Text="License" />
+                        <HyperlinkButton Content="MIT license in GitHub repo" NavigateUri="https://github.com/amis92/EuProcurement/blob/master/LICENSE"/>
+                    </StackPanel>
+                    <StackPanel Margin="12">
+                        <TextBlock Text="Source code repo" />
+                        <HyperlinkButton Content="GitHub repo" NavigateUri="https://github.com/amis92/EuProcurement"/>
+                    </StackPanel>
+                    <StackPanel Margin="12">
+                        <TextBlock Text="TED data" />
+                        <HyperlinkButton Content="EU Open Data TED website" NavigateUri="http://data.europa.eu/euodp/pl/data/dataset/ted-1" />
+                    </StackPanel>
                 </StackPanel>
-                <StackPanel Margin="12">
-                    <TextBlock Text="GitHub code" />
-                    <HyperlinkButton Content="https://github.com/amis92/EuProcurement" NavigateUri="https://github.com/amis92/EuProcurement"/>
-                </StackPanel>
-                <StackPanel Margin="12">
-                    <TextBlock Text="TED data" />
-                    <HyperlinkButton Content="http://data.europa.eu/euodp/pl/data/dataset/ted-1" NavigateUri="http://data.europa.eu/euodp/pl/data/dataset/ted-1" />
-                </StackPanel>
-            </StackPanel>
+            </ScrollViewer>
         </ContentDialog>
         
         <VisualStateManager.VisualStateGroups>
