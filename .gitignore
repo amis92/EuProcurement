@@ -243,3 +243,7 @@ ModelManifest.xml
 
 /src/EuProcurement.CsvThinner/data
 project.fragment.lock.json
+/src/EuProcurement.Uwp/_pkginfo.txt
+/src/EuProcurement.Uwp/_pkginfo.txt
+/src/EuProcurement.Uwp/Package.StoreAssociation.xml
+*.appx

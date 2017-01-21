@@ -123,10 +123,12 @@
                 <controls:BladeItem x:Name="RootBlade"
                                     IsOpen="True"
                                     TitleBarVisibility="Collapsed">
-                    <ListView ItemsSource="{x:Bind ViewModel.AnalysisResults, Mode=OneWay}"
-                              ItemTemplate="{StaticResource AnalysisResultTemplate}"
-                              SelectionMode="None"
-                              Padding="24">
+                    <ListView
+                        x:Name="ResultsListView"
+                        ItemsSource="{x:Bind ViewModel.AnalysisResults, Mode=OneWay}"
+                        ItemTemplate="{StaticResource AnalysisResultTemplate}"
+                        SelectionMode="None"
+                        Padding="24">
                         <ListView.Header>
                             <TextBlock Style="{ThemeResource TitleTextBlockStyle}"
                                    Text="EU Procurement Net flow analysis"
@@ -143,8 +145,9 @@
                 
                 <controls:BladeItem x:Name="FilterBlade"
                                     IsOpen="True"
-                                    TitleBarVisibility="Collapsed">
-                    <StackPanel Margin="24">
+                                    TitleBarVisibility="Collapsed"
+                                    Width="180">
+                    <StackPanel x:Name="FilterBladeStackPanel" Margin="24">
                         <TextBlock Style="{ThemeResource TitleTextBlockStyle}">Filters</TextBlock>
                         <ToggleButton x:Name="CpvFilterToggleButton"
                                       Content="CPV filter"
@@ -164,6 +167,7 @@
                 <controls:BladeItem x:Name="YearsBlade"
                                     Title="Year filter"
                                     IsOpen="False"
+                                    Width="200"
                                     VisibilityChanged="YearsBlade_OnVisibilityChanged">
                     <ListView x:Name="YearFilterListView"
                               ItemsSource="{x:Bind ViewModel.YearSelectionRoot.Children, Mode=OneWay}"
@@ -179,6 +183,7 @@
                 <controls:BladeItem x:Name="CountriesBlade"
                                     Title="Countries filter"
                                     IsOpen="True"
+                                    Width="300"
                                     VisibilityChanged="CountriesBlade_OnVisibilityChanged">
                     <ListView x:Name="CountriesListView"
                               ItemsSource="{x:Bind ViewModel.CountrySelector.SelectedPairs, Mode=OneWay}"
@@ -191,19 +196,19 @@
                                           Header="Country from"
                                           ItemsSource="{x:Bind ViewModel.CountrySelector.Countries, Mode=OneWay}"
                                           SelectedItem="{x:Bind ViewModel.CountrySelector.NewCountryFrom, Mode=TwoWay}"
-                                          Margin="12,0" />
+                                          Margin="12" />
                                 <ComboBox x:Name="CountryToBox"
                                           Header="Country to"
                                           ItemsSource="{x:Bind ViewModel.CountrySelector.Countries, Mode=OneWay}"
                                           SelectedItem="{x:Bind ViewModel.CountrySelector.NewCountryTo, Mode=TwoWay}"
-                                          Margin="12,0"
+                                          Margin="12"
                                           RelativePanel.RightOf="CountryFromBox"/>
                                 <Button x:Name="CountryPairCreateButton"
                                         Content="Add"
                                         Command="{x:Bind ViewModel.CountrySelector.CreatePair, Mode=OneWay}"
-                                        Margin="12,0"
-                                        RelativePanel.RightOf="CountryToBox"
-                                        RelativePanel.AlignBottomWith="CountryToBox"/>
+                                        Margin="12"
+                                        RelativePanel.Below="CountryToBox"
+                                        RelativePanel.AlignRightWithPanel="True"/>
                             </RelativePanel>
                         </ListView.Header>
                     </ListView>
@@ -295,6 +300,8 @@
                        IsSecondaryButtonEnabled="True"
                        SecondaryButtonText="Close">
             <StackPanel Margin="0,12">
+                <controls:HeaderedTextBlock Header="Title" Text="EU Procurement Analysis" Margin="12" />
+                <controls:HeaderedTextBlock x:Name="VersionTextBlock" Header="Version" Margin="12" />
                 <controls:HeaderedTextBlock Header="Copyright" Text="Copyright © 2017" Margin="12" />
                 <controls:HeaderedTextBlock Header="Authors" Text="Amadeusz Sadowski &amp; Piotr Olechno" Margin="12" />
                 <controls:HeaderedTextBlock Header="University" Text="Warsaw University of Technology" Margin="12" />
@@ -312,5 +319,36 @@
                 </StackPanel>
             </StackPanel>
         </ContentDialog>
+        
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Full">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="600" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="Small">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="RootBlade.Width" Value="280" />
+                        <Setter Target="BladeView.Padding" Value="12" />
+                        <Setter Target="ResultsListView.Padding" Value="12" />
+                        <Setter Target="FilterBladeStackPanel.Margin" Value="12" />
+                        <Setter Target="CpvDivisionsListView.Padding" Value="12" />
+                        <Setter Target="CpvGroupsListView.Padding" Value="12" />
+                        <Setter Target="CpvClassesListView.Padding" Value="12" />
+                        <Setter Target="CpvCategoriesListView.Padding" Value="12" />
+                        <Setter Target="CpvSubcategoriesListView.Padding" Value="12" />
+                        <Setter Target="CpvDivisionsBlade.Width" Value="280" />
+                        <Setter Target="CpvGroupsBlade.Width" Value="280" />
+                        <Setter Target="CpvClassesBlade.Width" Value="280" />
+                        <Setter Target="CpvCategoriesBlade.Width" Value="280" />
+                        <Setter Target="CpvSubcategoriesBlade.Width" Value="280" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>

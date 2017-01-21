@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -37,6 +38,10 @@ namespace EuProcurement.Uwp
             {
                 await ViewModel.InitializeAsync();
             }
+
+            var packageVersion = Package.Current.Id.Version;
+
+            VersionTextBlock.Text = $"{packageVersion.Major}.{packageVersion.Minor}.{packageVersion.Build}";
         }
 
         public Visibility InvertVisibility(Visibility original)
