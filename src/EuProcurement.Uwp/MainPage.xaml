@@ -298,7 +298,10 @@
                 <controls:HeaderedTextBlock Header="Copyright" Text="Copyright © 2017" Margin="12" />
                 <controls:HeaderedTextBlock Header="Authors" Text="Amadeusz Sadowski &amp; Piotr Olechno" Margin="12" />
                 <controls:HeaderedTextBlock Header="University" Text="Warsaw University of Technology" Margin="12" />
-                <controls:HeaderedTextBlock Header="MIT License" Text="Amadeusz Sadowski &amp; Piotr Olechno" Margin="12" />
+                <StackPanel Margin="12">
+                    <TextBlock Text="MIT license" />
+                    <HyperlinkButton Content="https://github.com/amis92/EuProcurement/blob/master/LICENSE" NavigateUri="https://github.com/amis92/EuProcurement/blob/master/LICENSE"/>
+                </StackPanel>
                 <StackPanel Margin="12">
                     <TextBlock Text="GitHub code" />
                     <HyperlinkButton Content="https://github.com/amis92/EuProcurement" NavigateUri="https://github.com/amis92/EuProcurement"/>
