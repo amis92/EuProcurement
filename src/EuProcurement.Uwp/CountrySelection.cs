@@ -44,10 +44,7 @@ namespace EuProcurement.Uwp
 
         public int CompareTo(CountrySelection other)
         {
-            var fromComparison = string.CompareOrdinal(CountryFrom, other.CountryFrom);
-            return fromComparison != 0
-                ? fromComparison 
-                : string.CompareOrdinal(CountryTo, other.CountryTo);
+            return string.CompareOrdinal(ToString(), other.ToString());
         }
         public static bool operator ==(CountrySelection left, CountrySelection right)
         {

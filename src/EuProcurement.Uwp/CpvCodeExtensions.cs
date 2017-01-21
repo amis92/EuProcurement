@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EuProcurement.Uwp
 {
@@ -48,6 +50,15 @@ namespace EuProcurement.Uwp
                 throw new ArgumentException($"'{nameof(subcategory)}' has to be of length {expectedLength}.");
             }
             return $"{@this.Code.Substring(0,5)}{subcategory}-{@this.ControlNumber}";
+        }
+
+        public static CpvCode MostGeneric(this IEnumerable<CpvCode> codes)
+        {
+            if (codes == null)
+            {
+                throw new ArgumentNullException(nameof(codes));
+            }
+            return codes.OrderBy(x => x).First();
         }
     }
 }

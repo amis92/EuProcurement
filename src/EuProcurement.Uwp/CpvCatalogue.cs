@@ -10,12 +10,8 @@ namespace EuProcurement.Uwp
         public CpvCatalogue(ImmutableDictionary<CpvCode, CpvTreeNode> divisions)
         {
             Divisions = divisions;
-            AllNodes =
-                Divisions.Values.SelectMany(div => div.ThisAndAllDescendants).ToImmutableDictionary(node => node.Code);
         }
-
-        public ImmutableDictionary<CpvCode, CpvTreeNode> AllNodes { get; }
-
+        
         public ImmutableDictionary<CpvCode, CpvTreeNode> Divisions { get; }
     }
 
@@ -29,39 +25,43 @@ namespace EuProcurement.Uwp
                 group code by code.Division
                 into div
                 let divCodeOrDef = div.FirstOrDefault(c => c.Group == CpvCode.EmptyGroup)
-                let divCode = divCodeOrDef.Equals(CpvCode.Empty) ? div.First() : divCodeOrDef
+                let divNotFound = divCodeOrDef.Equals(CpvCode.Empty)
+                let divCode = divNotFound ? div.MostGeneric() : divCodeOrDef
                 select new CpvTreeNode.Builder
                 {
                     Descriptor = descriptors[divCode],
                     Children =
-                        from code1 in div.Except(new[] { divCode })
+                        from code1 in divNotFound ? div : div.Except(new[] { divCode })
                         group code1 by code1.Group
                         into grp
                         let groupCodeOrDef = grp.FirstOrDefault(c => c.Class == CpvCode.EmptyClass)
-                        let groupCode = groupCodeOrDef.Equals(CpvCode.Empty) ? grp.First() : groupCodeOrDef
+                        let groupNotFound = groupCodeOrDef.Equals(CpvCode.Empty)
+                        let groupCode = groupNotFound ? grp.MostGeneric() : groupCodeOrDef
                         select new CpvTreeNode.Builder
                         {
                             Descriptor = descriptors[groupCode],
                             Children =
-                                from code2 in grp.Except(new[] { groupCode })
+                                from code2 in groupNotFound ? grp : grp.Except(new[] { groupCode })
                                 group code2 by code2.Class
                                 into cls
                                 let classCodeOrDef = cls.FirstOrDefault(c => c.Category == CpvCode.EmptyCategory)
-                                let classCode = classCodeOrDef.Equals(CpvCode.Empty) ? cls.First() : classCodeOrDef
+                                let classNotFound = classCodeOrDef.Equals(CpvCode.Empty)
+                                let classCode = classNotFound ? cls.MostGeneric() : classCodeOrDef
                                 select new CpvTreeNode.Builder
                                 {
                                     Descriptor = descriptors[classCode],
                                     Children =
-                                        from code3 in cls.Except(new[] { classCode })
+                                        from code3 in classNotFound ? cls : cls.Except(new[] { classCode })
                                         group code3 by code3.Category
                                         into cat
                                         let catCodeOrDef = cat.FirstOrDefault(c => c.Subcategory == CpvCode.EmptySubcategory)
-                                        let catCode = catCodeOrDef.Equals(CpvCode.Empty) ? cat.First() : catCodeOrDef
+                                        let catNotFound = catCodeOrDef.Equals(CpvCode.Empty)
+                                        let catCode = catNotFound ? cat.MostGeneric() : catCodeOrDef
                                         select new CpvTreeNode.Builder
                                         {
                                             Descriptor = descriptors[catCode],
                                             Children =
-                                                from sub in cat.Except(new[] { catCode })
+                                                from sub in catNotFound ? cat : cat.Except(new[] { catCode })
                                                 select new CpvTreeNode.Builder
                                                 {
                                                     Descriptor = descriptors[sub],

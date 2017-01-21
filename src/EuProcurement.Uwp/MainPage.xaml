@@ -56,6 +56,53 @@
                 </Grid>
             </controls:SlidableListItem>
         </DataTemplate>
+        <DataTemplate x:Key="AnalysisResultTemplate" x:DataType="local:AnalysisResult">
+            <RelativePanel HorizontalAlignment="Stretch"
+                           Background="#77444444"
+                           BorderBrush="DimGray"
+                           BorderThickness="2"
+                           Padding="12,6,0,6">
+                <RelativePanel.Resources>
+                    <Style TargetType="controls:HeaderedTextBlock">
+                        <Setter Property="Margin" Value="12,0" />
+                        <Setter Property="HorizontalContentAlignment" Value="Right" />
+                        <Setter Property="HeaderTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <TextBlock HorizontalAlignment="Right" TextAlignment="Right" Text="{Binding}" />
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="TextStyle">
+                            <Setter.Value>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource HeaderedTextBlockTextStyle}">
+                                    <Setter Property="TextAlignment" Value="Right" />
+                                </Style>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </RelativePanel.Resources>
+                <TextBlock  x:Name="CountryTextBlock"
+                            Text="{x:Bind CountrySelection.ToString()}" />
+                <controls:HeaderedTextBlock Header="Paid"
+                                            x:Name="PaidTextBlock"
+                                            Text="{x:Bind EuroPaidString}"
+                                            Margin="12,0"
+                                            RelativePanel.Below="CountryTextBlock"
+                                            RelativePanel.AlignRightWithPanel="True" />
+                <controls:HeaderedTextBlock Header="Received"
+                                            x:Name="ReceivedTextBlock"
+                                            Text="{x:Bind EuroReceivedString}"
+                                            Margin="12,0"
+                                            RelativePanel.Below="PaidTextBlock"
+                                            RelativePanel.AlignRightWithPanel="True"/>
+                <controls:HeaderedTextBlock Header="Total (as paid)"
+                                            Text="{x:Bind TotalEuroAsPaidString}"
+                                            Margin="12,0"
+                                            RelativePanel.Below="ReceivedTextBlock"
+                                            RelativePanel.AlignRightWithPanel="True"/>
+            </RelativePanel>
+        </DataTemplate>
         <Style TargetType="controls:BladeItem">
             <Setter Property="Width" Value="400" />
             <Setter Property="BorderBrush" Value="DarkGray" />
@@ -79,7 +126,13 @@
                     <StackPanel Margin="24">
                         <TextBlock Text="{x:Bind ViewModel.LoadingException.Message, Mode=OneWay}"
                                    Visibility="{x:Bind local:MainPage.IsNotNullToVisibility(ViewModel.LoadingException), Mode=OneWay}" />
-                        <TextBlock Style="{ThemeResource TitleTextBlockStyle}" TextWrapping="WrapWholeWords">EU Procurement Net flow analysis</TextBlock>
+                        <TextBlock Style="{ThemeResource TitleTextBlockStyle}"
+                                   Text="EU Procurement Net flow analysis"
+                                   Margin="0,0,0,12"
+                                   TextWrapping="WrapWholeWords" />
+                        <ListView ItemsSource="{x:Bind ViewModel.AnalysisResults, Mode=OneWay}"
+                                  ItemTemplate="{StaticResource AnalysisResultTemplate}"
+                                  SelectionMode="None"/>
                     </StackPanel>
                 </controls:BladeItem>
                 
@@ -120,7 +173,7 @@
 
                 <controls:BladeItem x:Name="CountriesBlade"
                                     Title="Countries filter"
-                                    IsOpen="False"
+                                    IsOpen="True"
                                     VisibilityChanged="CountriesBlade_OnVisibilityChanged">
                     <ListView x:Name="CountriesListView"
                               ItemsSource="{x:Bind ViewModel.CountrySelector.SelectedPairs, Mode=OneWay}"
@@ -161,7 +214,7 @@
                               SelectionChanged="CpvDivisionsListView_OnSelectionChanged"
                               Padding="24">
                         <ListView.Header>
-                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind ViewModel.CpvSelectableTreeRoot.IsSelected, Mode=TwoWay}" Margin="0,0,0,6" />
+                            <ToggleButton Content="Toggle all" IsChecked="{Binding ElementName=Page, Path=ViewModel.CpvSelectableTreeRoot.IsSelected, Mode=TwoWay}" Margin="0,0,0,6" />
                         </ListView.Header>
                     </ListView>
                 </controls:BladeItem>
@@ -176,7 +229,7 @@
                               SelectionChanged="CpvGroupsListView_OnSelectionChanged"
                               Padding="24">
                         <ListView.Header>
-                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind CpvDivisionsListView.SelectedItem.(local:SelectionTreeItem.IsSelected), Mode=TwoWay}" Margin="0,0,0,6" />
+                            <ToggleButton Content="Toggle all" IsChecked="{Binding ElementName=CpvDivisionsListView, Path=SelectedItem.IsSelected, Mode=TwoWay}" Margin="0,0,0,6" />
                         </ListView.Header>
                     </ListView>
                 </controls:BladeItem>
@@ -191,7 +244,7 @@
                               SelectionChanged="CpvClassesListView_OnSelectionChanged"
                               Padding="24">
                         <ListView.Header>
-                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind CpvGroupsListView.SelectedItem.(local:SelectionTreeItem.IsSelected), Mode=TwoWay}" Margin="0,0,0,6" />
+                            <ToggleButton Content="Toggle all" IsChecked="{Binding ElementName=CpvGroupsListView, Path=SelectedItem.IsSelected, Mode=TwoWay}" Margin="0,0,0,6" />
                         </ListView.Header>
                     </ListView>
                 </controls:BladeItem>
@@ -206,7 +259,7 @@
                               SelectionChanged="CpvCategoriesListView_OnSelectionChanged"
                               Padding="24">
                         <ListView.Header>
-                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind CpvClassesListView.SelectedItem.(local:SelectionTreeItem.IsSelected), Mode=TwoWay}" Margin="0,0,0,6" />
+                            <ToggleButton Content="Toggle all" IsChecked="{Binding ElementName=CpvClassesListView, Path=SelectedItem.IsSelected, Mode=TwoWay}" Margin="0,0,0,6" />
                         </ListView.Header>
                     </ListView>
                 </controls:BladeItem>
@@ -220,7 +273,7 @@
                               SelectionMode="None"
                               Padding="24">
                         <ListView.Header>
-                            <ToggleButton Content="Toggle all" IsChecked="{x:Bind CpvCategoriesListView.SelectedItem.(local:SelectionTreeItem.IsSelected), Mode=TwoWay}" Margin="0,0,0,6" />
+                            <ToggleButton Content="Toggle all" IsChecked="{Binding ElementName=CpvCategoriesListView, Path=SelectedItem.IsSelected, Mode=TwoWay}" Margin="0,0,0,6" />
                         </ListView.Header>
                     </ListView>
                 </controls:BladeItem>

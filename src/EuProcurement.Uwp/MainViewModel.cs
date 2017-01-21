@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,6 +23,7 @@ namespace EuProcurement.Uwp
         private CpvCatalogue _cpvCatalogue;
         private SelectionTreeItem _cpvSelectableTreeRoot;
         private CountrySelectorViewModel _countrySelector;
+        private ImmutableArray<AnalysisResult> _analysisResults = ImmutableArray<AnalysisResult>.Empty;
 
         public bool IsLoadingData
         {
@@ -65,6 +67,12 @@ namespace EuProcurement.Uwp
             private set { Set(ref _countrySelector, value); }
         }
 
+        public ImmutableArray<AnalysisResult> AnalysisResults
+        {
+            get { return _analysisResults; }
+            private set { Set(ref _analysisResults, value); }
+        }
+
         private bool Initialized { get; set; }
 
         public async Task InitializeAsync()
@@ -88,6 +96,7 @@ namespace EuProcurement.Uwp
         public void UpdateAnalysisResults()
         {
             var results = GetAnalysisResults();
+            AnalysisResults = results.ToImmutableArray();
         }
 
         private async Task LoadDataAsync()
@@ -108,38 +117,61 @@ namespace EuProcurement.Uwp
                 CpvCatalogue = CpvCatalogueFactory.CreateCatalogueFromXml(cpvCatalogueXml);
             }
             CreateFilters();
+            UpdateAnalysisResults();
         }
 
         private void CreateFilters()
         {
             var cpvSelectableDivisions = ConvertCpvNodesToSelectionItems(CpvCatalogue.Divisions.Values);
-            CpvSelectableTreeRoot = new SelectionTreeItem("CPV", null, cpvSelectableDivisions);
+            CpvSelectableTreeRoot = new SelectionTreeItem("CPV", null, cpvSelectableDivisions)
+            {
+                IsSelected = true
+            };
+            CpvSelectableTreeRoot.IsSelectedChanged += (s, e) => UpdateAnalysisResults();
             CpvSelectableTreeRoot.AnyDescendantIsSelectedChanged += CpvTreeDescendantIsSelectedChanged;
 
-            var yearFilters = Records.Select(x => x.Year).Distinct().OrderBy(x => x).Select(x => new SelectionTreeItem(x, x)).ToImmutableArray();
-            YearSelectionRoot = new SelectionTreeItem("Years", null, yearFilters);
+            var yearFilters =
+                Records
+                .Select(x => x.Year)
+                .Distinct()
+                .OrderBy(x => x)
+                .Select(x => new SelectionTreeItem(x, x))
+                .ToImmutableArray();
+            YearSelectionRoot = new SelectionTreeItem("Years", null, yearFilters)
+            {
+                IsSelected = true
+            };
+            YearSelectionRoot.IsSelectedChanged += (s, e) => UpdateAnalysisResults();
             YearSelectionRoot.AnyDescendantIsSelectedChanged += OnYearIsSelectedChanged;
 
-            var countries = Records.SelectMany(RecordCountries).Distinct().OrderBy(x => x).ToImmutableArray();
-            CountrySelector = new CountrySelectorViewModel(countries);
+            var countries =
+                Records
+                .SelectMany(RecordCountries)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToImmutableArray();
+            CountrySelector = new CountrySelectorViewModel(countries)
+            {
+                SelectedPairs =
+                {
+                    new CountrySelection("PL", CountrySelection.AnyCountry)
+                }
+            };
             CountrySelector.SelectedPairs.CollectionChanged += OnSelectedPairsCollectionChanged;
         }
 
         private void CpvTreeDescendantIsSelectedChanged(SelectionTreeItem sender, DescendantIsSelectedChangedEventArgs e)
         {
-            // TODO update data filtering
             UpdateAnalysisResults();
         }
 
         private void OnSelectedPairsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            // TODO update data filtering
             UpdateAnalysisResults();
         }
         
         private void OnYearIsSelectedChanged(SelectionTreeItem sender, DescendantIsSelectedChangedEventArgs e)
         {
-            // TODO update data filtering
             UpdateAnalysisResults();
         }
 
@@ -153,12 +185,36 @@ namespace EuProcurement.Uwp
             var countrySelectionLookup = selectedCountryPairs
                 .GroupBy(pair => pair.CountryFrom)
                 .ToImmutableDictionary(group => group.Key, group => group.Select(pair => pair.CountryTo).ToImmutableHashSet());
-            return from record in Records
+            var filteredRecords = 
+                (from record in Records
                 where selectedYears.Contains(record.Year)
-                where IsCountryPairSelected(record, countrySelectionLookup)
                 where IsCpvSelected(record.Cpv, CpvSelectableTreeRoot)
-                select new AnalysisResult(new CountrySelection(record.CountryFrom, record.CountryTo), record.EuroTotal);
-
+                select record)
+                .ToImmutableArray();
+            var countryPairRecords =
+                selectedCountryPairs.ToImmutableDictionary(x => x, x => new HashSet<TedAggregateRecord>());
+            foreach (var record in filteredRecords)
+            {
+                foreach (var countrySelection in GetFittingCountrySelections(record, selectedCountryPairs))
+                {
+                    countryPairRecords[countrySelection].Add(record);
+                }
+            }
+            var results =
+                from x in countryPairRecords
+                let amountPaid = x.Value.Aggregate(new Tuple<decimal, decimal>(0M,0M), (sum, record) =>
+                {
+                    const string any = CountrySelection.AnyCountry;
+                    var keyFrom = x.Key.CountryFrom;
+                    var keyTo = x.Key.CountryTo;
+                    var isSwitched = (keyFrom != any && keyFrom != record.CountryFrom) || (keyTo != any && keyTo != record.CountryTo);
+                    var amountPaid = (isSwitched ? -record.EuroTotal : record.EuroTotal);
+                    var sumPaid = amountPaid > 0 ? sum.Item1 + amountPaid : sum.Item1;
+                    var sumReceived = amountPaid < 0 ? sum.Item2 - amountPaid : sum.Item2;
+                    return new Tuple<decimal, decimal>(sumPaid, sumReceived);
+                })
+                select new AnalysisResult(x.Key, amountPaid.Item1, amountPaid.Item2);
+            return results;
         }
 
         private bool IsCpvSelected(CpvCode recordCpv, SelectionTreeItem cpvRoot)
@@ -197,16 +253,29 @@ namespace EuProcurement.Uwp
                        ?.IsSelected == true;
         }
 
-        private bool IsCountryPairSelected(TedAggregateRecord record,
-            ImmutableDictionary<string, ImmutableHashSet<string>> selectedCountryPairs)
+        private IEnumerable<CountrySelection> GetFittingCountrySelections(TedAggregateRecord record,
+            ImmutableHashSet<CountrySelection> selectedCountryPairs)
         {
-            ImmutableHashSet<string> countryToSet;
-            if (selectedCountryPairs.TryGetValue(record.CountryFrom, out countryToSet) ||
-                selectedCountryPairs.TryGetValue(CountrySelection.AnyCountry, out countryToSet))
+            var exactRecordPair = new CountrySelection(record.CountryFrom, record.CountryTo);
+            if (selectedCountryPairs.Contains(exactRecordPair))
             {
-                return countryToSet.Contains(record.CountryTo) || countryToSet.Contains(CountrySelection.AnyCountry);
+                yield return exactRecordPair;
             }
-            return false;
+            var invertedRecordPair = new CountrySelection(record.CountryTo, record.CountryFrom);
+            if (selectedCountryPairs.Contains(invertedRecordPair))
+            {
+                yield return invertedRecordPair;
+            }
+            var fromAnyPair = new CountrySelection(CountrySelection.AnyCountry, record.CountryTo);
+            if (selectedCountryPairs.Contains(fromAnyPair))
+            {
+                yield return fromAnyPair;
+            }
+            var toAnyPair = new CountrySelection(record.CountryFrom, CountrySelection.AnyCountry);
+            if (selectedCountryPairs.Contains(toAnyPair))
+            {
+                yield return toAnyPair;
+            }
         }
 
         private static IEnumerable<string> RecordCountries(TedAggregateRecord record)
@@ -249,15 +318,31 @@ namespace EuProcurement.Uwp
 
     public class AnalysisResult
     {
-        public AnalysisResult(CountrySelection countrySelection, decimal netFlowEuroAmount)
+        public AnalysisResult(CountrySelection countrySelection, decimal euroPaid, decimal euroReceived)
         {
             CountrySelection = countrySelection;
-            NetFlowEuroAmount = netFlowEuroAmount;
+            EuroPaid = euroPaid;
+            EuroReceived = euroReceived;
+            TotalEuroAsPaid = EuroPaid - EuroReceived;
+            const string euroSymbol = "€"; // Euro symbol
+            EuroPaidString = $"{EuroPaid:N} {euroSymbol}";
+            EuroReceivedString = $"{EuroReceived:N} {euroSymbol}";
+            TotalEuroAsPaidString = $"{TotalEuroAsPaid:N} {euroSymbol}";
         }
 
         public CountrySelection CountrySelection { get; }
 
-        public decimal NetFlowEuroAmount { get; }
+        public decimal TotalEuroAsPaid { get; }
+
+        public string TotalEuroAsPaidString { get; }
+
+        public decimal EuroPaid { get; }
+
+        public string EuroPaidString { get; }
+
+        public decimal EuroReceived { get; }
+
+        public string EuroReceivedString { get; }
     }
 }
 
