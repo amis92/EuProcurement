@@ -299,35 +299,44 @@
                        IsPrimaryButtonEnabled="False"
                        IsSecondaryButtonEnabled="True"
                        SecondaryButtonText="Close">
-            <ScrollViewer>
-                <ScrollViewer.Resources>
-                    <Style TargetType="controls:HeaderedTextBlock">
-                        <Setter Property="Margin" Value="12" />
-                        <Setter Property="TextStyle">
-                            <Setter.Value>
-                                <Style TargetType="TextBlock" BasedOn="{StaticResource HeaderedTextBlockTextStyle}">
-                                    <Setter Property="TextWrapping" Value="WrapWholeWords" />
-                                </Style>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ScrollViewer.Resources>
-                <StackPanel Margin="0,12">
+            <ContentControl.Resources>
+                <Style TargetType="controls:HeaderedTextBlock">
+                    <Setter Property="Margin" Value="12" />
+                    <Setter Property="TextStyle">
+                        <Setter.Value>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource HeaderedTextBlockTextStyle}">
+                                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+                            </Style>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ContentControl.Resources>
+            <ScrollViewer Padding="12">
+                <StackPanel>
                     <controls:HeaderedTextBlock Header="Title" Text="EU Procurement Analysis" />
                     <controls:HeaderedTextBlock x:Name="VersionTextBlock" Header="Version" />
-                    <controls:HeaderedTextBlock Header="Copyright" Text="Copyright © 2017" />
-                    <controls:HeaderedTextBlock Header="Authors" Text="Amadeusz Sadowski &amp; Piotr Olechno" />
+                    <controls:HeaderedTextBlock Header="Authors" Text="© 2017 Amadeusz Sadowski &amp; Piotr Olechno" />
                     <controls:HeaderedTextBlock Header="University" Text="Warsaw University of Technology" />
+                    <controls:HeaderedTextBlock Header="Description">
+                        <controls:HeaderedTextBlock.Text>
+                            Analyze EU TED public procurement results with a great array of filtering options.
+                            Pretty, simple and modern UI will only help you in this interesting education endeavor.
+                        </controls:HeaderedTextBlock.Text>
+                    </controls:HeaderedTextBlock>
+                    <controls:HeaderedTextBlock Header="Additional info">
+                        <controls:HeaderedTextBlock.Text>
+                            This app is a UWP app written in C# for purposes of university course
+                            in Social Networks Analysis Techniques (pol. TASS Techniki Analizy Sieci Społecznościowych),
+                            Faculty of Electronics and Information at Warsaw University of Technology (PL).
+                            The idea for an app was conceived by course authors, M.Sc. Piotr Arabas and M.Sc. Mariusz Kamola.
+                        </controls:HeaderedTextBlock.Text>
+                    </controls:HeaderedTextBlock>
                     <StackPanel Margin="12">
-                        <TextBlock Text="License" />
-                        <HyperlinkButton Content="MIT license in GitHub repo" NavigateUri="https://github.com/amis92/EuProcurement/blob/master/LICENSE"/>
-                    </StackPanel>
-                    <StackPanel Margin="12">
-                        <TextBlock Text="Source code repo" />
-                        <HyperlinkButton Content="GitHub repo" NavigateUri="https://github.com/amis92/EuProcurement"/>
-                    </StackPanel>
-                    <StackPanel Margin="12">
-                        <TextBlock Text="TED data" />
+                        <TextBlock Text="References" />
+                        <HyperlinkButton Content="MIT license" NavigateUri="https://github.com/amis92/EuProcurement/blob/master/LICENSE"/>
+                        <HyperlinkButton Content="TASS course website" NavigateUri="http://data.europa.eu/euodp/pl/data/dataset/ted-1" />
+                        <HyperlinkButton Content="Support" NavigateUri="https://github.com/amis92/EuProcurement/issues"/>
+                        <HyperlinkButton Content="GitHub source code repo" NavigateUri="https://github.com/amis92/EuProcurement"/>
                         <HyperlinkButton Content="EU Open Data TED website" NavigateUri="http://data.europa.eu/euodp/pl/data/dataset/ted-1" />
                     </StackPanel>
                 </StackPanel>
